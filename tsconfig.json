@@ -4,9 +4,7 @@
     "module": "preserve",
     "moduleResolution": "bundler",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "allowJs": true,
     "skipLibCheck": true,
@@ -16,10 +14,5 @@
     "resolveJsonModule": true,
     "jsx": "react-jsx"
   },
-  "include": [
-    "electron/**/*",
-    "src/**/*",
-    "*.ts",
-    "*.mts"
-  ]
+  "include": ["electron/**/*", "src/**/*", "*.ts", "*.mts"]
 }
