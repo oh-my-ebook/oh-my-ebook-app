@@ -3,6 +3,11 @@
     "target": "ESNext",
     "module": "preserve",
     "moduleResolution": "bundler",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
