@@ -12,6 +12,7 @@
     "jsx": "react-jsx"
   },
   "include": [
+    "electron/**/*",
     "src/**/*",
     "*.ts",
     "*.mts"
