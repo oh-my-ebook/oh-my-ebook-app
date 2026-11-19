@@ -18,7 +18,9 @@
     "release": "electron-forge release",
     "lint": "oxlint && oxfmt --check",
     "lint:fix": "oxlint --fix && oxfmt --write",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev:web": "vite --config vite.renderer.config.mts --mode web",
+    "build:web": "vite build --config vite.renderer.config.mts --mode web"
   },
   "devDependencies": {
     "@electron-forge/cli": "^8.0.1",
