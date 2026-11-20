@@ -9,9 +9,3 @@ export interface FullscreenController {
   toggle(): Promise<void>;
   subscribe(listener: (state: FullscreenState) => void): () => void;
 }
-
-export const fullscreenChannels = {
-  getState: 'fullscreen:get-state',
-  toggle: 'fullscreen:toggle',
-  changed: 'fullscreen:changed',
-} as const;

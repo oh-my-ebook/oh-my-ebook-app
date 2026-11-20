@@ -1,8 +1,6 @@
 import { BrowserWindow, ipcMain, type IpcMainInvokeEvent } from 'electron';
-import {
-  fullscreenChannels,
-  type FullscreenState,
-} from '../../shared/fullscreen';
+import type { FullscreenState } from '../../shared/fullscreen';
+import { fullscreenChannels } from './channels';
 
 const registeredWindows = new WeakSet<BrowserWindow>();
 
