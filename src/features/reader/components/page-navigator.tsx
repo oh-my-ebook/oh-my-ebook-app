@@ -14,23 +14,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/shadcn/tooltip';
+import { usePageNavigation } from '../hooks/use-page-navigation';
 
-function getPageNumber(value: number | readonly number[]) {
+function toPageNumber(value: number | readonly number[]) {
   return Array.isArray(value) ? value[0] : value;
 }
 
 interface PageNavigationButtonProps {
-  disabled: boolean;
   icon: LucideIcon;
   label: string;
-  onPageChange: () => void;
+  disabled: boolean;
+  onClick: () => void;
 }
 
 function PageNavigationButton({
-  disabled,
   icon: Icon,
   label,
-  onPageChange,
+  disabled,
+  onClick,
 }: PageNavigationButtonProps) {
   return (
     <Tooltip>
@@ -39,7 +40,7 @@ function PageNavigationButton({
           <Button
             aria-label={label}
             disabled={disabled}
-            onClick={onPageChange}
+            onClick={onClick}
             size="icon"
             variant="ghost"
           />
@@ -52,22 +53,25 @@ function PageNavigationButton({
   );
 }
 
-interface PageNavigatorProps {
-  currentPage: number;
-  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
-  disabled?: boolean;
-  totalPages: number;
-}
+export function PageNavigator() {
+  const {
+    currentPage,
+    totalPages,
+    hasPreviousPage,
+    hasNextPage,
+    goToPage,
+    goToFirstPage,
+    goToPreviousPage,
+    goToNextPage,
+    goToLastPage,
+  } = usePageNavigation();
 
-export function PageNavigator({
-  currentPage,
-  setCurrentPage,
-  disabled = false,
-  totalPages,
-}: PageNavigatorProps) {
-  const [previewPage, setPreviewPage] = useState<number | null>(null);
-  const sliderPage = previewPage ?? currentPage;
-  // const navigation = getPageNavigation(totalPages, previousPage, nextPage);
+  // 슬라이더를 끄는 동안에는 페이지를 바꾸지 않고 위치 숫자만 미리 보여 준다.
+  const [draggingPage, setDraggingPage] = useState<number | null>(null);
+  const displayedPage = draggingPage ?? currentPage;
+
+  // 한 페이지짜리 책은 min과 max가 같아 슬라이더가 그려지지 않으므로 0부터 시작해 손잡이를 끝에 둔다.
+  const isSinglePageBook = totalPages === 1;
 
   return (
     <TooltipProvider>
@@ -76,16 +80,16 @@ export function PageNavigator({
         className="flex w-full min-w-0 items-center gap-1"
       >
         <PageNavigationButton
-          disabled={disabled}
           icon={ChevronsLeftIcon}
           label="첫 페이지"
-          onPageChange={() => setCurrentPage(1)}
+          disabled={!hasPreviousPage}
+          onClick={goToFirstPage}
         />
         <PageNavigationButton
-          disabled={disabled}
           icon={ChevronLeftIcon}
           label="이전 페이지"
-          onPageChange={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={!hasPreviousPage}
+          onClick={goToPreviousPage}
         />
 
         <output
@@ -93,36 +97,21 @@ export function PageNavigator({
           aria-live="polite"
           className="w-6 shrink-0 text-center tabular-nums text-xs text-muted-foreground"
         >
-          {sliderPage}
+          {displayedPage}
           <span className="sr-only"> / {totalPages}</span>
         </output>
         <Slider
           className="min-w-0 flex-1 px-2 reader-slider"
-          disabled={disabled || totalPages === 1}
+          disabled={totalPages <= 1}
+          min={isSinglePageBook ? 0 : 1}
           max={totalPages}
-          min={totalPages === 1 ? 0 : 1}
-          onValueChange={(pageNumbers) => {
-            const pageNumber = getPageNumber(pageNumbers);
-            if (typeof pageNumber === 'number') {
-              setPreviewPage(pageNumber);
-            }
-          }}
-          onValueCommitted={(pageNumbers) => {
-            setPreviewPage(null);
-            const pageNumber = getPageNumber(pageNumbers);
-            if (
-              typeof pageNumber !== 'number' ||
-              !Number.isSafeInteger(pageNumber) ||
-              pageNumber < 1 ||
-              pageNumber > totalPages
-            ) {
-              return;
-            }
-
-            setCurrentPage(pageNumber);
-          }}
           step={1}
-          value={[sliderPage]}
+          value={[displayedPage]}
+          onValueChange={(value) => setDraggingPage(toPageNumber(value))}
+          onValueCommitted={(value) => {
+            setDraggingPage(null);
+            goToPage(toPageNumber(value));
+          }}
         />
         <span
           aria-hidden="true"
@@ -132,18 +121,16 @@ export function PageNavigator({
         </span>
 
         <PageNavigationButton
-          disabled={disabled}
           icon={ChevronRightIcon}
           label="다음 페이지"
-          onPageChange={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
+          disabled={!hasNextPage}
+          onClick={goToNextPage}
         />
         <PageNavigationButton
-          disabled={disabled}
           icon={ChevronsRightIcon}
           label="마지막 페이지"
-          onPageChange={() => setCurrentPage(totalPages)}
+          disabled={!hasNextPage}
+          onClick={goToLastPage}
         />
       </nav>
     </TooltipProvider>

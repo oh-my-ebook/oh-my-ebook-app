@@ -2,14 +2,13 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/shadcn/resizable';
-import { useState } from 'react';
 import { useToggle } from '@/hooks/use-toggle';
 
 import ReaderController from './components/controller';
 import { Toc } from './components/toc';
 import { Toolbar } from './components/toolbar';
 import { useBookViewSize } from './hooks/use-book-view-size';
-import { useIsWideScreen } from './hooks/use-is-wide-screen';
+import { useOpenBook } from './hooks/use-open-book';
 
 function ReaderMain() {
   const { containerRef } = useBookViewSize<HTMLElement>();
@@ -25,9 +24,12 @@ function ReaderMain() {
   );
 }
 
-function Reader() {
-  const isWideScreen = useIsWideScreen();
-  const [currentPage, setCurrentPage] = useState(1);
+interface ReaderProps {
+  bookId: string;
+}
+
+function Reader({ bookId }: ReaderProps) {
+  useOpenBook(bookId);
 
   const [isTocOpen, toggleToc, setTocOpen] = useToggle();
   const [isPanelOpen, togglePanel] = useToggle();
@@ -38,7 +40,6 @@ function Reader() {
   return (
     <div className="flex h-svh min-w-0 flex-col overflow-hidden">
       <Toolbar
-        title="PDF Reader"
         isTocOpen={isTocOpen}
         onToggleToc={toggleToc}
         isPanelOpen={isPanelOpen}
@@ -46,13 +47,7 @@ function Reader() {
       />
 
       <div className="flex min-h-0 flex-1">
-        <Toc
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          isWideScreen={isWideScreen}
-          open={isTocOpen}
-          onOpenChange={setTocOpen}
-        />
+        <Toc open={isTocOpen} onOpenChange={setTocOpen} />
 
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel id="reader" defaultSize="70%" minSize="45%">
