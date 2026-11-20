@@ -1,45 +1,68 @@
-import type { RefObject } from 'react';
 import {
   ArrowLeftIcon,
   BookmarkIcon,
   ListIcon,
   PanelRightIcon,
+  type LucideIcon,
 } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { ThemeToggle } from '@/components/common/theme-toggle';
 import { Button } from '@/components/shadcn/button';
 import { Separator } from '@/components/shadcn/separator';
-import { ThemeToggle } from '@/components/common/theme-toggle';
+import { useCurrentBook } from '@/stores/book-store';
 import { FullscreenToggle } from './fullscreen-toggle';
-import { useNavigate } from 'react-router';
 import { ViewModeToggle } from './view-mode-toggle';
 
-// interface ReaderToolbarProps {
-//   onToggleToc: () => void;
-//   tocButtonRef: RefObject<HTMLButtonElement | null>;
-//   tocOpen: boolean;
-//   onTogglePanel: () => void;
-//   panelButtonRef: RefObject<HTMLButtonElement | null>;
-//   panelOpen: boolean;
-//   title: string;
-//   preferredView: PageViewMode;
-//   isSpreadAvailable: boolean;
-//   onViewChange: (view: PageViewMode) => void;
-// }
+interface PanelToggleButtonProps {
+  icon: LucideIcon;
+  label: { open: string; close: string };
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+function PanelToggleButton({
+  icon: Icon,
+  label,
+  isOpen,
+  onToggle,
+}: PanelToggleButtonProps) {
+  return (
+    <Button
+      aria-label={isOpen ? label.close : label.open}
+      aria-pressed={isOpen}
+      onClick={onToggle}
+      size="icon-sm"
+      variant={isOpen ? 'secondary' : 'ghost'}
+    >
+      <Icon />
+    </Button>
+  );
+}
+
+function ToolbarSeparator() {
+  return (
+    <Separator
+      className="h-5 data-vertical:w-[1.5px] data-vertical:self-center"
+      orientation="vertical"
+    />
+  );
+}
 
 interface ToolbarProps {
-  title: string;
-  onToggleToc: () => void;
   isTocOpen: boolean;
-  onTogglePanel: () => void;
+  onToggleToc: () => void;
   isPanelOpen: boolean;
+  onTogglePanel: () => void;
 }
 
 export function Toolbar({
-  onToggleToc,
   isTocOpen,
-  onTogglePanel,
+  onToggleToc,
   isPanelOpen,
+  onTogglePanel,
 }: ToolbarProps) {
-  const navigation = useNavigate();
+  const navigate = useNavigate();
+  const book = useCurrentBook();
 
   return (
     <header
@@ -49,57 +72,39 @@ export function Toolbar({
       <div className="flex items-center gap-1">
         <Button
           aria-label="책장으로 돌아가기"
-          onClick={() => navigation('/library')}
+          onClick={() => navigate('/library')}
           size="icon-sm"
           variant="ghost"
         >
           <ArrowLeftIcon />
         </Button>
-        <Separator
-          className="h-5 data-vertical:w-[1.5px] data-vertical:self-center"
-          orientation="vertical"
+        <ToolbarSeparator />
+        <PanelToggleButton
+          icon={ListIcon}
+          label={{ open: '목차 열기', close: '목차 닫기' }}
+          isOpen={isTocOpen}
+          onToggle={onToggleToc}
         />
-        <Button
-          aria-label={isTocOpen ? '목차 닫기' : '목차 열기'}
-          aria-pressed={isTocOpen}
-          onClick={onToggleToc}
-          size="icon-sm"
-          variant={isTocOpen ? 'secondary' : 'ghost'}
-        >
-          <ListIcon />
-        </Button>
         <Button aria-label="책갈피" size="icon-sm" variant="ghost">
           <BookmarkIcon />
         </Button>
       </div>
 
       <h1 className="min-w-0 truncate text-center font-medium max-sm:col-span-2 max-sm:row-start-2">
-        {'제목'}
+        {book?.title}
       </h1>
 
       <div className="flex items-center justify-end gap-1">
-        <ViewModeToggle
-        // isSpreadAvailable={isSpreadAvailable}
-        // onViewChange={onViewChange}
-        // preferredView={preferredView}
-        />
+        <ViewModeToggle />
         <FullscreenToggle />
-        <Separator
-          className="h-5 data-vertical:w-[1.5px] data-vertical:self-center"
-          orientation="vertical"
-        />
+        <ToolbarSeparator />
         <ThemeToggle />
-        <Button
-          aria-label={
-            isPanelOpen ? '함께 읽기 패널 닫기' : '함께 읽기 패널 열기'
-          }
-          aria-pressed={isPanelOpen}
-          onClick={onTogglePanel}
-          size="icon-sm"
-          variant={isPanelOpen ? 'secondary' : 'ghost'}
-        >
-          <PanelRightIcon />
-        </Button>
+        <PanelToggleButton
+          icon={PanelRightIcon}
+          label={{ open: '함께 읽기 패널 열기', close: '함께 읽기 패널 닫기' }}
+          isOpen={isPanelOpen}
+          onToggle={onTogglePanel}
+        />
       </div>
     </header>
   );

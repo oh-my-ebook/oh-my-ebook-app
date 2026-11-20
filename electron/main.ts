@@ -1,6 +1,10 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+import {
+  observeFullscreen,
+  registerFullscreenHandlers,
+} from './fullscreen/main';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -13,9 +17,12 @@ const createWindow = () => {
     width: 800,
     height: 600,
     webPreferences: {
+      // 페이지가 실행되기 전에 preload.js를 불러온다.
       preload: path.join(__dirname, 'preload.cjs'),
     },
   });
+
+  observeFullscreen(mainWindow);
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -34,6 +41,7 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  registerFullscreenHandlers();
   createWindow();
 
   // On OS X it's common to re-create a window in the app when the
