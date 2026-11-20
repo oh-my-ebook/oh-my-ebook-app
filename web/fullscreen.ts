@@ -3,17 +3,18 @@ import type {
   FullscreenState,
 } from '../shared/fullscreen';
 
-function readState(): FullscreenState {
-  return {
-    supported: Boolean(document.fullscreenEnabled),
-    active: document.fullscreenElement !== null,
-  };
-}
+export class BrowserFullscreen implements FullscreenController {
+  private readState(): FullscreenState {
+    return {
+      supported: Boolean(document.fullscreenEnabled),
+      active: document.fullscreenElement !== null,
+    };
+  }
 
-export const fullscreen: FullscreenController = {
   async getState() {
-    return readState();
-  },
+    return this.readState();
+  }
+
   async toggle() {
     if (document.fullscreenElement !== null) {
       await document.exitFullscreen();
@@ -24,10 +25,11 @@ export const fullscreen: FullscreenController = {
       // 클릭의 사용자 활성화를 유지하도록 다른 비동기 작업보다 먼저 요청한다.
       await document.documentElement.requestFullscreen();
     }
-  },
-  subscribe(listener) {
-    const handleChange = () => listener(readState());
+  }
+
+  subscribe(listener: (state: FullscreenState) => void): () => void {
+    const handleChange = () => listener(this.readState());
     document.addEventListener('fullscreenchange', handleChange);
     return () => document.removeEventListener('fullscreenchange', handleChange);
-  },
-};
+  }
+}
